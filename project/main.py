@@ -7,12 +7,25 @@ from Character import Character
 from Board import create_bubbles, generate_random_map
 
 # 랜덤 맵 생성
-map = generate_random_map()
+# map = generate_random_map()
+map = [
+        [".", ".", ".", ".", ".", ".", "B", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "/"],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "/"],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "/"],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "/"],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
+        [".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", "/"]
+    ]
 
 print(map)
 
 # 전역 변수
 
+round_clear = False
 fire = False
 cur_bubble = None
 nex_bubble = None
@@ -55,16 +68,28 @@ def create_bubble():
 
 def choice_color():
     colors = []
-    for row in map:
+    for row in map:  # 기존 map -> game_map
         for col in row:
-            if col not in colors and col not in [".", "/"]:
+            if col not in colors and col not in [".", "/"]:  # 유효한 색상만 추가
                 colors.append(col)
+
+    if not colors:  # colors가 비어 있는 경우 기본값 처리
+        print("No valid colors left in the map. Using default color.")
+        return "R"  # 기본 색상 (예: 빨강)
+
     return random.choice(colors)
 
 
+
 def prepare_bubbles():
-    """구슬 초기화"""
     global cur_bubble, nex_bubble, cannon
+
+    # 맵에 유효한 색상이 있는지 확인
+    if all(cell in [".", "/"] for row in map for cell in row):
+        round_clear = True
+        return
+
+    # 현재 버블과 다음 버블 생성
     if nex_bubble:
         cur_bubble = nex_bubble
     else:
@@ -113,6 +138,7 @@ def collision(down_cnt):
                 
         point += remove_bubbles(row_idx, col_idx, cur_bubble.color)
         print(f"{cur_bubble.color} attached at {cur_bubble.position}")
+        print(map)
         
         cur_bubble = None
         fire = False
@@ -120,7 +146,7 @@ def collision(down_cnt):
         
         return point
         
-    if cur_bubble.position[1] - cur_bubble.radius <= 0 + down_cnt:
+    if cur_bubble.position[1] - cur_bubble.radius <= 0 + down_cnt * 20:
         x = int(list(cur_bubble.position)[0] // (cur_bubble.radius * 2))
         bubble_group[0][x] = get_color(cur_bubble.color)
         cur_bubble = None
@@ -130,7 +156,7 @@ def collision(down_cnt):
     
 def check_game_end(down_cnt):
     global map
-    for col in range(7, -1, -1):  # 아래에서 위로 탐색
+    for col in range(9, -1, -1):  # 아래에서 위로 탐색
         # 해당 행에 색깔 있는 구슬이 있는지 확인
         if any(cell != "." and cell != "/" for cell in map[col]):
             # 색깔이 있는 구슬이 발견되면 해당 행만 검사
@@ -144,11 +170,16 @@ def check_game_end(down_cnt):
 
 def round_clear():
     global map
-    for col in range(0, 8):
-        for row in range(0, 12):
-            if map[col][row] != "." or map[col][row] != "/":
-                return False
-    return True
+    
+    # 맵의 모든 값을 확인
+    for col in range(0, 10):  # 열
+        for row in range(0, 12):  # 행
+            if map[col][row] != "." and map[col][row] != "/":  # "." 또는 "/"가 아닐 경우
+                return False  # 라운드 클리어 조건 실패
+
+    return True  # 모든 값이 "." 또는 "/"일 경우
+
+
     
 
 def remove_bubbles(row_idx, col_idx, color):
@@ -214,14 +245,10 @@ def remove_gravity_bubble():
 
 def reset_game():
     """게임 초기화 함수 - 새로운 라운드 시작"""
-    global map, point, fire_cnt, down_cnt, cur_bubble, nex_bubble
+    global map, point, cur_bubble, nex_bubble
 
     # 맵 재생성
     map = generate_random_map()  # 새로운 맵 생성
-
-    # 발사 관련 변수 초기화
-    fire_cnt = 0  # 발사 횟수 초기화
-    down_cnt = 0  # 맵 내려간 횟수 초기화
 
     # 현재 및 다음 구슬 초기화
     cur_bubble = None
@@ -287,6 +314,7 @@ def main():
                 fire = True
                 cur_bubble.set_angle(cannon.angle)  # 발사 시점에서 대포의 각도 동기화
                 fire_cnt += 1
+                print(fire_cnt, down_cnt)
                 
         # 배경 그리기
         display_image.paste(background_image, (0, 0))
@@ -307,7 +335,7 @@ def main():
         else:
             prepare_bubbles()
         
-        if fire_cnt % (10 - round_cnt) == 0 and fire_cnt != 0:
+        if fire_cnt % (8 - round_cnt) == 0 and fire_cnt != 0:
             down_cnt += 1
             fire_cnt = 0
             print(map)
@@ -320,7 +348,10 @@ def main():
             draw.text((60, 120), "GAME IS OVER", fill="red")  # 게임 종료 메시지
             joystick.disp.image(display_image)  # 화면 갱신
             time.sleep(2)
+            round_cnt = 1
+            fire_cnt = 0
             down_cnt = 0
+            point = 0
             reset_game()  # 게임 초기화
             continue  # 새 라운드로 넘어가기
             
@@ -329,6 +360,8 @@ def main():
             joystick.disp.image(display_image)
             time.sleep(2)
             round_cnt += 1
+            fire_cnt = 0
+            down_cnt = 0
             reset_game()
             continue
 
