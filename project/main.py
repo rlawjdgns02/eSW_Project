@@ -4,16 +4,11 @@ from Joystick import Joystick
 import time
 import random
 from Character import Character
-from Board import create_bubbles, generate_random_map
+from Board import create_bubbles, generate_random_map, map
+from Utils import map_to_color, get_color, choice_color
 
-# 랜덤 맵 생성
-map = generate_random_map()
-
-print(map)
 
 # 전역 변수
-
-round_clear = False
 fire = False
 cur_bubble = None
 nex_bubble = None
@@ -22,52 +17,6 @@ cannon = None
 screen_width = 0
 screen_height = 0
 point = 0  # 점수
-
-
-def get_color(color):
-    if color == "red":
-        return "R"
-    elif color == "yellow":
-        return "Y"
-    elif color == "blue":
-        return "B"
-    elif color == "green":
-        return "G"
-    elif color == "purple":
-        return "P"
-
-def map_to_color(code):
-    color_map = {
-        "R": "red",
-        "Y": "yellow",
-        "B": "blue",
-        "G": "green",
-        "P": "purple"
-    }
-    return color_map.get(code, "black")
-
-
-def create_bubble():
-    """새로운 구슬 생성"""
-    global cannon
-    color = map_to_color(choice_color())
-    angle = cannon.angle  # 대포의 각도를 구슬에 전달
-    return Bubble(color=color, angle=angle, screen_size=(screen_width, screen_height), speed=5)
-
-def choice_color():
-    colors = []
-    for row in map:  # 기존 map -> game_map
-        for col in row:
-            if col not in colors and col not in [".", "/"]:  # 유효한 색상만 추가
-                colors.append(col)
-
-    if not colors:  # colors가 비어 있는 경우 기본값 처리
-        print("No valid colors left in the map. Using default color.")
-        return "R"  # 기본 색상 (예: 빨강)
-
-    return random.choice(colors)
-
-
 
 def prepare_bubbles():
     global cur_bubble, nex_bubble, cannon
@@ -88,6 +37,14 @@ def prepare_bubbles():
     cur_bubble.set_pos((screen_width // 2, bubble_initial_y))
     nex_bubble.set_pos((screen_width // 4, bubble_initial_y + 10))
     cur_bubble.set_angle(cannon.angle)  # 대포 각도를 구슬에 전달
+
+def create_bubble():
+    """새로운 구슬 생성"""
+    global cannon
+    color = map_to_color(choice_color())
+    angle = cannon.angle  # 대포의 각도를 구슬에 전달
+    return Bubble(color=color, angle=angle, screen_size=(screen_width, screen_height), speed=5)
+
 
 
 def collision(down_cnt):
@@ -141,34 +98,6 @@ def collision(down_cnt):
         fire = False
         map = bubble_group
         return
-    
-def check_game_end(down_cnt):
-    global map
-    for col in range(9, -1, -1):  # 아래에서 위로 탐색
-        # 해당 행에 색깔 있는 구슬이 있는지 확인
-        if any(cell != "." and cell != "/" for cell in map[col]):
-            # 색깔이 있는 구슬이 발견되면 해당 행만 검사
-            for row in range(12):
-                if map[col][row] != "." and map[col][row] != "/":  # 유효한 구슬만 리
-                    other_y = col * 20 + 10 + down_cnt * 20  # 구슬의 중심 y 좌표
-                    if other_y > 175:  # 기준 y 좌표를 초과하면 종료
-                        return True
-            break
-    return False
-
-def round_clear():
-    global map
-    
-    # 맵의 모든 값을 확인
-    for col in range(0, 10):  # 열
-        for row in range(0, 12):  # 행
-            if map[col][row] != "." and map[col][row] != "/":  # "." 또는 "/"가 아닐 경우
-                return False  # 라운드 클리어 조건 실패
-
-    return True  # 모든 값이 "." 또는 "/"일 경우
-
-
-    
 
 def remove_bubbles(row_idx, col_idx, color):
     visited.clear()
@@ -230,6 +159,31 @@ def remove_gravity_bubble():
                 
     return cnt
     
+
+def check_game_end(down_cnt):
+    global map
+    for col in range(9, -1, -1):  # 아래에서 위로 탐색
+        # 해당 행에 색깔 있는 구슬이 있는지 확인
+        if any(cell != "." and cell != "/" for cell in map[col]):
+            # 색깔이 있는 구슬이 발견되면 해당 행만 검사
+            for row in range(12):
+                if map[col][row] != "." and map[col][row] != "/":  # 유효한 구슬만 리
+                    other_y = col * 20 + 10 + down_cnt * 20  # 구슬의 중심 y 좌표
+                    if other_y > 175:  # 기준 y 좌표를 초과하면 종료
+                        return True
+            break
+    return False
+
+def round_clear():
+    global map
+    
+    # 맵의 모든 값을 확인
+    for col in range(0, 10):  # 열
+        for row in range(0, 12):  # 행
+            if map[col][row] != "." and map[col][row] != "/":  # "." 또는 "/"가 아닐 경우
+                return False  # 라운드 클리어 조건 실패
+
+    return True  # 모든 값이 "." 또는 "/"일 경우
 
 def reset_game():
     """게임 초기화 함수 - 새로운 라운드 시작"""
