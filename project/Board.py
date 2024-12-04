@@ -41,7 +41,7 @@ def generate_random_map():
 
 def create_bubble_array(map):
     bubbles = []
-    color_map = {"R": "red", "Y": "yellow", "B": "blue", "G": "green", "B" : "black"}
+    color_map = {"R": "red", "Y": "yellow", "B": "blue", "G": "green", "W" : "black"}
 
     # 버블 크기 고정
     bubble_diameter = 20  # 직경(지름)을 10으로 설정
