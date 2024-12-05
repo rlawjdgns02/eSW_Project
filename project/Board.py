@@ -64,5 +64,4 @@ def create_bubble_array(map):
 
     return bubbles
 
-
 map = generate_random_map()
