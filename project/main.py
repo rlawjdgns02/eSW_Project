@@ -19,7 +19,7 @@ screen_height = 0
 point = 0  # 점수
 
 def prepare_bubbles():
-    global cur_bubble, nex_bubble, cannon, suc_cnt
+    global cur_bubble, nex_bubble, cannon, suc_cnt, map
 
     # 맵에 유효한 색상이 있는지 확인
     if all(cell in [".", "/"] for row in map for cell in row):
@@ -29,13 +29,13 @@ def prepare_bubbles():
     if nex_bubble:
         cur_bubble = nex_bubble
     else:
-        cur_bubble = create_bubble(cannon, screen_width, screen_height)
+        cur_bubble = create_bubble(cannon, screen_width, screen_height, map)
     
     if suc_cnt >= 10:
         nex_bubble = create_bomb(cannon, screen_width, screen_height)
         suc_cnt = 0
     else:
-        nex_bubble = create_bubble(cannon, screen_width, screen_height)
+        nex_bubble = create_bubble(cannon, screen_width, screen_height, map)
         
     bubble_initial_y = cannon.center[1]
     cur_bubble.set_pos((screen_width // 2, bubble_initial_y))
@@ -164,9 +164,9 @@ def remove_bomb_bubble(row_idx, col_idx):
     global map
     bomb_cnt = 0
     if row_idx % 2 == 0:
-        rem = [[0,-1], [-1, -1], [-1, 0], [1,1], [1,0], [1,-1]]
+        rem = [[-1, -1], [-1, 0], [0, -1], [0, 1], [1, -1], [1, 0]]
     else:
-        rem = [[0,-1], [-1, 0], [-1, 1], [0,1], [1,1], [1,0]]
+        rem = [[-1, 0], [-1, 1], [0, -1], [0, 1], [1, 0], [1, 1]]
     
     for row, col in rem:
         x, y = row_idx + row, col_idx + col  # 상대 좌표를 절대 좌표로 변환
