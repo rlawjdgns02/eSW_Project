@@ -181,7 +181,7 @@ def remove_bomb_bubble(row_idx, col_idx):
 
 
 def main():
-    global cur_bubble, fire, map, cannon, screen_width, screen_height, point
+    global cur_bubble, fire, map, cannon, screen_width, screen_height, point, suc_cnt
 
     # 조이스틱 초기화
     joystick = Joystick()
@@ -302,7 +302,6 @@ def main():
                 round_cnt += 1
                 fire_cnt = 0
                 down_cnt = 0
-                suc_cnt = 0
                 map = reset_game(cur_bubble, nex_bubble)
                 time.sleep(0.1)
             continue
