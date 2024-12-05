@@ -102,8 +102,8 @@ class Bubble:
         return None
 
 
-def create_bubble(cannon, screen_width, screen_height):
-    color = map_to_color(choice_color())
+def create_bubble(cannon, screen_width, screen_height, map):
+    color = map_to_color(choice_color(map))
     angle = cannon.angle  # 대포의 각도를 구슬에 전달
     return Bubble(color=color, angle=angle, screen_size=(screen_width, screen_height), speed=5) #해당 정보(색, 각도)를 버블 클래스의 객체 반환
 
