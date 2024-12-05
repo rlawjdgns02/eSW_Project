@@ -20,7 +20,7 @@ def map_to_color(code):
     }
     return color_map.get(code, "black")
 
-def choice_color():
+def choice_color(map):
     colors = []
     for row in map:
         for col in row:
